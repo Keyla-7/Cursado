@@ -65,20 +65,28 @@ function generarHTML() {
       divMateria.className = "materia";
       divMateria.innerHTML = `
         <div class="titulo-materia">${materia}</div>
-        <div class="parcial">
-          📄 Parcial 1: <input type="number" class="nota" min="10" max="100" />
+
+        <div class="parcial parcial1">
+          📄 Parcial 1: <input type="number" class="nota" name="parcial1" min="10" max="100" />
         </div>
-          📄 Parcial 2: <input type="number" class="nota" min="10" max="100" />
+
+        <div class="parcial parcial2">
+          📄 Parcial 2: <input type="number" class="nota" name="parcial2" min="10" max="100" />
         </div>
-          🎓 Final 1: <input type="number" class="nota" min="10" max="100" />
+
+        <div class="final">
+          🎓 Final: <input type="number" class="nota" name="final" min="10" max="100" />
         </div>
-        <div class="tp">
+
+        <div class="tps">
           <div class="tp">
-            💼 TP: <input type="number" class="nota" min="10" max="100" />
+            💼 TP: <input type="number" class="nota" name="tp-1" min="10" max="100" />
             <button class="eliminar-tp">🗑️</button>
           </div>
         </div>
+
         <button class="agregar-tp">➕ Agregar TP</button>
+
         <div class="promedio">📊 Promedio: <span>0</span></div>
       `;
       divAnio.appendChild(divMateria);
@@ -91,41 +99,42 @@ function generarHTML() {
 
 function actualizarEventos() {
   document.querySelectorAll(".nota").forEach(input => {
-    input.addEventListener("input", () => {
-      actualizarColores();
+    input.removeEventListener("input", input._listener || (() => {}));
+    input._listener = () => {
+      actualizarColorNota(input);
       actualizarPromedios();
       guardarEnLocalStorage();
-    });
+    };
+    input.addEventListener("input", input._listener);
     actualizarColorNota(input);
   });
 
   document.querySelectorAll(".agregar-tp").forEach(btn => {
-    btn.addEventListener("click", e => {
+    btn.removeEventListener("click", btn._listener || (() => {}));
+    btn._listener = (e) => {
       const tpsDiv = e.target.parentElement.querySelector(".tps");
       const nuevoTP = document.createElement("div");
       nuevoTP.className = "tp";
-      nuevoTP.innerHTML = `💼 TP: <input type="number" class="nota" min="10" max="100" />
+      nuevoTP.innerHTML = `💼 TP: <input type="number" class="nota" name="tp-${Date.now()}" min="10" max="100" />
         <button class="eliminar-tp">🗑️</button>`;
       tpsDiv.appendChild(nuevoTP);
       actualizarEventos();
       guardarEnLocalStorage();
-    });
+    };
+    btn.addEventListener("click", btn._listener);
   });
 
   document.querySelectorAll(".eliminar-tp").forEach(btn => {
-    btn.addEventListener("click", e => {
+    btn.removeEventListener("click", btn._listener || (() => {}));
+    btn._listener = (e) => {
       e.target.parentElement.remove();
       actualizarPromedios();
       guardarEnLocalStorage();
-    });
+    };
+    btn.addEventListener("click", btn._listener);
   });
-  actualizarPromedios();
-}
 
-function actualizarColores() {
-  document.querySelectorAll("input.nota").forEach(input => {
-    actualizarColorNota(input);
-  });
+  actualizarPromedios();
 }
 
 function actualizarColorNota(input) {
