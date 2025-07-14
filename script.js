@@ -1,4 +1,57 @@
 
+script_js_recuperatorios = """
+const materiasPorAnio = {
+  "Primer año": [
+    "Antropologia",
+    "Procesos psicologicos y sociales",
+    "Entornos virtuales",
+    "Comunicación en salud",
+    "Bases del cuidado",
+    "Morfofisiología",
+    "Fisico-quimica",
+    "Enfermeria comunitaria y salud publica",
+    "Practica profesionalizante i",
+    "Matematicas",
+    "Comprension y produccion lectora"
+  ],
+  "Segundo año": [
+    "Educacion para la salud",
+    "Nutricion y dietoterapia",
+    "Microbiologia parasitologia e inmunologia",
+    "Epidemiologia y bioestadistica",
+    "Farmacologia aplicada a la enfermeria",
+    "Fisiopatologia humana",
+    "Cuidados de enfermeria en el adulto",
+    "Aspectos psicosociales y culturales del desarrollo",
+    "Cuidados de enfermeria en el adulto mayor",
+    "Practica profesionalizante ii"
+  ],
+  "Tercer año": [
+    "Ingles tecnico",
+    "Investigacion en salud",
+    "Cuidados de enfermeria en salud mental",
+    "Cuidados de enfermeria en emergencias y catastrofes",
+    "Etica y legislacion aplicada a la enfermeria",
+    "Gestion del cuidado en enfermeria",
+    "Cuidados de enfermeria materna y del recien nacido",
+    "Cuidados de enfermeria en las infancias y adolescencias",
+    "Practica profesionalizante iii",
+    "Vacunacion e inmunizacion"
+  ]
+};
+
+function guardarEnLocalStorage() {
+  const datos = {};
+  document.querySelectorAll(".materia").forEach(materia => {
+    const nombre = materia.querySelector(".titulo-materia").textContent;
+    const inputs = materia.querySelectorAll("input.nota");
+    datos[nombre] = [];
+    inputs.forEach(input => {
+      datos[nombre].push({ name: input.name, value: input.value });
+    });
+  });
+  localStorage.setItem("notasFacultad", JSON.stringify(datos));
+}
 script_reparado = """
 function guardarNotas() {
   const datos = {};
