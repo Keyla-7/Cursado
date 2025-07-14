@@ -53,7 +53,7 @@ function guardarEnLocalStorage() {
       });
     });
   });
-  localStorage.setItem("notasFacultad", JSON.stringify(datos));
+  localStorage.setItem("notasFacultad", JSON.stringify(notasfacultad));
 }
 
 function cargarDesdeLocalStorage() {
@@ -201,7 +201,6 @@ function actualizarPromedios() {
     materia.querySelector(".promedio span").textContent = promedio;
   });
 }
-localStorage.setItem("notasfacultad", JSON.stringify;
 
       // Actualizar desbloqueos y progreso
 window.onload = cargarDesdeLocalStorage;
