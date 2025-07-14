@@ -53,7 +53,7 @@ function guardarEnLocalStorage() {
       });
     });
   });
-  localStorage.setItem("notasFacultad", JSON.stringify(notasfacultad));
+  localStorage.setItem("notasFacultad", JSON.stringify(datos));
 }
 
 function cargarDesdeLocalStorage() {
