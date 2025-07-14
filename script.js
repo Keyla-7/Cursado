@@ -202,7 +202,6 @@ function actualizarPromedios() {
   });
 }
 
-      // Actualizar desbloqueos y progreso
 window.onload = cargarDesdeLocalStorage;
 """
 
@@ -212,4 +211,4 @@ with open("/mnt/data/script.js", "w") as f:
 
 "/mnt/data/script.js"
 
-        
+    
