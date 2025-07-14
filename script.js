@@ -201,7 +201,9 @@ function actualizarPromedios() {
     materia.querySelector(".promedio span").textContent = promedio;
   });
 }
+localStorage.setItem("notasfacultad", JSON.stringify(min10max100));
 
+      // Actualizar desbloqueos y progreso
 window.onload = cargarDesdeLocalStorage;
 """
 
