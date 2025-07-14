@@ -1,6 +1,4 @@
-# Nuevo script.js completo con 2 parciales, 1 final y recuperatorios automáticos + guardado real
-
-script_js_recuperatorios = """
+script_js_corregido = """
 const materiasPorAnio = {
   "Primer año": [
     "Antropologia",
@@ -54,9 +52,58 @@ function guardarEnLocalStorage() {
   localStorage.setItem("notasFacultad", JSON.stringify(datos));
 }
 
+function crearTP(name = "") {
+  const div = document.createElement("div");
+  div.className = "tp";
+  const tpId = name || `tp-${Date.now()}`;
+  div.innerHTML = `💼 TP: <input type="number" class="nota" name="${tpId}" min="10" max="100" />
+    <button class="eliminar-tp">🗑️</button>`;
+  return div;
+}
+
+function crearMateriaHTML(materia) {
+  const divMateria = document.createElement("div");
+  divMateria.className = "materia";
+  divMateria.innerHTML = `
+    <div class="titulo-materia">${materia}</div>
+    <div class="parcial parcial1">
+      📄 Parcial 1: <input type="number" class="nota" name="parcial1" min="10" max="100" />
+    </div>
+    <div class="parcial parcial2">
+      📄 Parcial 2: <input type="number" class="nota" name="parcial2" min="10" max="100" />
+    </div>
+    <div class="final">
+      🎓 Final: <input type="number" class="nota" name="final" min="10" max="100" />
+    </div>
+    <div class="tps">
+      <div class="tp">
+        💼 TP: <input type="number" class="nota" name="tp-1" min="10" max="100" />
+        <button class="eliminar-tp">🗑️</button>
+      </div>
+    </div>
+    <button class="agregar-tp">➕ Agregar TP</button>
+    <div class="promedio">📊 Promedio (TPs + Parciales): <span>0</span></div>
+  `;
+  return divMateria;
+}
+
+function generarHTML() {
+  const contenedor = document.getElementById("contenedor-anios");
+  contenedor.innerHTML = "";
+  for (let anio in materiasPorAnio) {
+    const divAnio = document.createElement("div");
+    divAnio.className = "anio";
+    divAnio.innerHTML = `<h2>${anio}</h2>`;
+    materiasPorAnio[anio].forEach(materia => {
+      const divMateria = crearMateriaHTML(materia);
+      divAnio.appendChild(divMateria);
+    });
+    contenedor.appendChild(divAnio);
+  }
+}
+
 function cargarDesdeLocalStorage() {
   const datos = JSON.parse(localStorage.getItem("notasFacultad"));
-  generarHTML();
   if (datos) {
     document.querySelectorAll(".materia").forEach(materia => {
       const nombre = materia.querySelector(".titulo-materia").textContent;
@@ -81,52 +128,6 @@ function cargarDesdeLocalStorage() {
         });
       }
     });
-  }
-  actualizarEventos();
-}
-
-function crearTP(name = "") {
-  const div = document.createElement("div");
-  div.className = "tp";
-  const tpId = name || `tp-${Date.now()}`;
-  div.innerHTML = `💼 TP: <input type="number" class="nota" name="${tpId}" min="10" max="100" />
-    <button class="eliminar-tp">🗑️</button>`;
-  return div;
-}
-
-function generarHTML() {
-  const contenedor = document.getElementById("contenedor-anios");
-  contenedor.innerHTML = "";
-  for (let anio in materiasPorAnio) {
-    const divAnio = document.createElement("div");
-    divAnio.className = "anio";
-    divAnio.innerHTML = `<h2>${anio}</h2>`;
-    materiasPorAnio[anio].forEach(materia => {
-      const divMateria = document.createElement("div");
-      divMateria.className = "materia";
-      divMateria.innerHTML = `
-        <div class="titulo-materia">${materia}</div>
-        <div class="parcial parcial1">
-          📄 Parcial 1: <input type="number" class="nota" name="parcial1" min="10" max="100" />
-        </div>
-        <div class="parcial parcial2">
-          📄 Parcial 2: <input type="number" class="nota" name="parcial2" min="10" max="100" />
-        </div>
-        <div class="final">
-          🎓 Final: <input type="number" class="nota" name="final" min="10" max="100" />
-        </div>
-        <div class="tps">
-          <div class="tp">
-            💼 TP: <input type="number" class="nota" name="tp-1" min="10" max="100" />
-            <button class="eliminar-tp">🗑️</button>
-          </div>
-        </div>
-        <button class="agregar-tp">➕ Agregar TP</button>
-        <div class="promedio">📊 Promedio (TPs + Parciales): <span>0</span></div>
-      `;
-      divAnio.appendChild(divMateria);
-    });
-    contenedor.appendChild(divAnio);
   }
 }
 
@@ -172,10 +173,6 @@ function actualizarColorNota(input) {
   }
 }
 
-function actualizarColores() {
-  document.querySelectorAll("input.nota").forEach(actualizarColorNota);
-}
-
 function agregarRecuperatorioSiDesaprueba(input) {
   const cont = input.closest(".parcial, .final");
   if (!cont) return;
@@ -214,12 +211,16 @@ function actualizarPromedios() {
   });
 }
 
-cargarDesdeLocalStorage();
+window.onload = () => {
+  generarHTML();
+  cargarDesdeLocalStorage();
+  actualizarEventos();
+};
 """
 
-# Guardar el nuevo archivo script.js actualizado
+# Guardar archivo final para descargar
 with open("/mnt/data/script.js", "w") as f:
-    f.write(script_js_recuperatorios)
+    f.write(script_js_corregido)
 
 "/mnt/data/script.js"
-        
+      
