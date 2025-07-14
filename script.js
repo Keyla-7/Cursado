@@ -1,3 +1,4 @@
+# Nuevo script.js completo con 2 parciales, 1 final y recuperatorios automáticos + guardado real
 
 script_js_recuperatorios = """
 const materiasPorAnio = {
@@ -52,22 +53,10 @@ function guardarEnLocalStorage() {
   });
   localStorage.setItem("notasFacultad", JSON.stringify(datos));
 }
-script_reparado = """
-function guardarNotas() {
-  const datos = {};
-  document.querySelectorAll(".materia").forEach(materia => {
-    const nombre = materia.querySelector(".titulo-materia").textContent;
-    const inputs = materia.querySelectorAll("input.nota");
-    datos[nombre] = [];
-    inputs.forEach(input => {
-      datos[nombre].push({ name: input.name, value: input.value });
-    });
-  });
-  localStorage.setItem("notasFacultad", JSON.stringify(datos));
-}
 
-function cargarNotas() {
+function cargarDesdeLocalStorage() {
   const datos = JSON.parse(localStorage.getItem("notasFacultad"));
+  generarHTML();
   if (datos) {
     document.querySelectorAll(".materia").forEach(materia => {
       const nombre = materia.querySelector(".titulo-materia").textContent;
@@ -82,13 +71,11 @@ function cargarNotas() {
           }
           if (!input && data.name.includes("recup")) {
             const cont = materia.querySelector(`.${data.name.split("-")[0]}`);
-            if (cont) {
-              const div = document.createElement("div");
-              div.className = "recup";
-              div.innerHTML = `🔁 Recuperatorio: <input type="number" class="nota" name="${data.name}" value="${data.value}" min="10" max="100" />`;
-              cont.appendChild(div);
-              input = div.querySelector("input");
-            }
+            const recup = document.createElement("div");
+            recup.className = "recup";
+            recup.innerHTML = `🔁 Recuperatorio: <input type="number" class="nota" name="${data.name}" value="${data.value}" min="10" max="100">`;
+            cont.appendChild(recup);
+            input = recup.querySelector("input");
           }
           if (input) input.value = data.value;
         });
@@ -101,24 +88,56 @@ function cargarNotas() {
 function crearTP(name = "") {
   const div = document.createElement("div");
   div.className = "tp";
-  const id = name || `tp-${Date.now()}`;
-  div.innerHTML = `💼 TP: <input type="number" class="nota" name="${id}" min="10" max="100" />
+  const tpId = name || `tp-${Date.now()}`;
+  div.innerHTML = `💼 TP: <input type="number" class="nota" name="${tpId}" min="10" max="100" />
     <button class="eliminar-tp">🗑️</button>`;
   return div;
 }
 
+function generarHTML() {
+  const contenedor = document.getElementById("contenedor-anios");
+  contenedor.innerHTML = "";
+  for (let anio in materiasPorAnio) {
+    const divAnio = document.createElement("div");
+    divAnio.className = "anio";
+    divAnio.innerHTML = `<h2>${anio}</h2>`;
+    materiasPorAnio[anio].forEach(materia => {
+      const divMateria = document.createElement("div");
+      divMateria.className = "materia";
+      divMateria.innerHTML = `
+        <div class="titulo-materia">${materia}</div>
+        <div class="parcial parcial1">
+          📄 Parcial 1: <input type="number" class="nota" name="parcial1" min="10" max="100" />
+        </div>
+          📄 Parcial 2: <input type="number" class="nota" name="parcial2" min="10" max="100" />
+        </div>
+          🎓 Final: <input type="number" class="nota" name="final" min="10" max="100" />
+        </div>
+        <div class="tp">
+          <div class="tp">
+            💼 TP: <input type="number" class="nota" name="tp-1" min="10" max="100" />
+            <button class="eliminar-tp">🗑️</button>
+          </div>
+        </div>
+        <button class="agregar-tp">➕ Agregar TP</button>
+        <div class="promedio">📊 Promedio (TPs + Parciales): <span>0</span></div>
+      `;
+      divAnio.appendChild(divMateria);
+    });
+    contenedor.appendChild(divAnio);
+  }
+}
+
 function actualizarEventos() {
   document.querySelectorAll("input.nota").forEach(input => {
-    input.removeEventListener("input", input._eventoPersonalizado || (() => {}));
-    input._eventoPersonalizado = () => {
-      actualizarColor(input);
-      mostrarRecuperatorio(input);
-      calcularPromedios();
-      guardarNotas();
-    };
-    input.addEventListener("input", input._eventoPersonalizado);
-    actualizarColor(input);
-    mostrarRecuperatorio(input);
+    input.addEventListener("input", () => {
+      actualizarColores();
+      agregarRecuperatorioSiDesaprueba(input);
+      actualizarPromedios();
+      guardarEnLocalStorage();
+    });
+    actualizarColorNota(input);
+    agregarRecuperatorioSiDesaprueba(input);
   });
 
   document.querySelectorAll(".agregar-tp").forEach(btn => {
@@ -127,71 +146,92 @@ function actualizarEventos() {
       const nuevoTP = crearTP();
       tpsDiv.appendChild(nuevoTP);
       actualizarEventos();
-      guardarNotas();
+      guardarEnLocalStorage();
     };
   });
 
   document.querySelectorAll(".eliminar-tp").forEach(btn => {
     btn.onclick = () => {
       btn.parentElement.remove();
-      calcularPromedios();
-      guardarNotas();
+      actualizarPromedios();
+      guardarEnLocalStorage();
     };
   });
 
-  calcularPromedios();
+  actualizarPromedios();
 }
 
-function actualizarColor(input) {
-  const val = parseInt(input.value);
+function actualizarColorNota(input) {
+  const nota = parseInt(input.value);
   input.classList.remove("aprobado", "desaprobado");
-  if (!isNaN(val)) {
-    if (val >= 60) input.classList.add("aprobado");
+  if (!isNaN(nota)) {
+    if (nota >= 60) input.classList.add("aprobado");
     else input.classList.add("desaprobado");
   }
 }
 
-function mostrarRecuperatorio(input) {
+function actualizarColores() {
+  document.querySelectorAll("input.nota").forEach(actualizarColorNota);
+}
+
+function agregarRecuperatorioSiDesaprueba(input) {
   const cont = input.closest(".parcial, .final");
   if (!cont) return;
-  const val = parseInt(input.value);
+  const valor = parseInt(input.value);
   const nombre = input.name;
-  const existe = cont.querySelector(`input[name='${nombre}-recup']`);
-  if (val < 60 && !existe) {
+  let yaExiste = cont.querySelector(`.recup input[name='${nombre}-recup']`);
+
+  if (valor < 60 && !yaExiste) {
     const div = document.createElement("div");
     div.className = "recup";
     div.innerHTML = `🔁 Recuperatorio: <input type="number" class="nota" name="${nombre}-recup" min="10" max="100" />`;
     cont.appendChild(div);
-    actualizarEventos();
-  } else if (val >= 60 && existe) {
-    existe.parentElement.remove();
+    div.querySelector("input").addEventListener("input", () => {
+      actualizarColores();
+      guardarEnLocalStorage();
+    });
+  } else if (valor >= 60 && yaExiste) {
+    yaExiste.parentElement.remove();
   }
 }
 
-function calcularPromedios() {
+function actualizarPromedios() {
   document.querySelectorAll(".materia").forEach(materia => {
     let total = 0, cantidad = 0;
-    ["parcial1", "parcial2"].forEach(p => {
-      const val = parseInt(materia.querySelector(`input[name='${p}']`)?.value);
+    ["parcial1", "parcial2"].forEach(name => {
+      const input = materia.querySelector(`input[name='${name}']`);
+      const val = parseInt(input?.value);
       if (!isNaN(val)) { total += val; cantidad++; }
     });
     materia.querySelectorAll(".tp input").forEach(tp => {
       const val = parseInt(tp.value);
       if (!isNaN(val)) { total += val; cantidad++; }
     });
-    const promedio = cantidad > 0 ? Math.round(total / cantidad) : 0;
+    const promedio = cantidad ? Math.round(total / cantidad) : 0;
     materia.querySelector(".promedio span").textContent = promedio;
   });
 }
+function guardarNotas() {
+  const datos = {};
+  // Por cada materia
+  document.querySelectorAll(".materia").forEach(materia => {
+    const nombre = materia.querySelector(".titulo-materia").textContent;
+    const inputs = materia.querySelectorAll("input.nota");
+    datos[nombre] = [];
+    // Guardar nombre y valor de cada input de nota
+    inputs.forEach(input => {
+      datos[nombre].push({ name: input.name, value: input.value });
+    });
+  });
+  // Guardar todo como texto JSON en localStorage
+  localStorage.setItem("notasFacultad", JSON.stringify(datos));
+}
 
-window.onload = () => {
-  cargarNotas();
-};
+cargarDesdeLocalStorage();
 """
 
-# Guardar el archivo reparado
+# Guardar el nuevo archivo script.js actualizado
 with open("/mnt/data/script.js", "w") as f:
-    f.write(script_reparado)
+    f.write(script_js_recuperatorios)
 
 "/mnt/data/script.js"
-      
